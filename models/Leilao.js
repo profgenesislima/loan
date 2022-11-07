@@ -1,11 +1,12 @@
-//const { Double, Decimal128 } = require('mongodb');
 const mongoose  = require('mongoose');
 mongoose.set('debug', true);
 mongoose.pluralize(null);
 
 const lance = new mongoose.Schema({_id:false,
     email:{type:String},
-    valor_lance:{type:mongoose.Schema.Types.Decimal128,required:[true]}});
+    valor_lance:{type:mongoose.Schema.Types.Decimal128,required:[true]},
+    data_hora:{type:Date}
+});
 
 const categoria = new mongoose.Schema({_id:false,
     nome:{type:String, required:[true,'Favor, inserir o nome da Categoria.']},

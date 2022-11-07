@@ -33,16 +33,24 @@ const salvarLeilao = asyncHandler(async (req,res)=>{
 // @route PUT /api/leilao/produtos/id
 // @access private
 const atualizarLeilao = asyncHandler(async (req,res)=>{
-    console.log('body '.bgBlue+req.body.lances.valor);
-    console.log('param '.bgGreen+req.params.id);
+   
     const filter = {_id:req.params.id};
     const update = {
-            'lances.email':req.body.email,
-            'lances.valor': req.body.valor
+    "produto.nome": req.body.nomeProduto,
+    "produto.descricao":req.body.descricaoProduto,
+    "categoria.nome":req.body.nomeCategoria,
+    "valor_inicial":req.body.valorInicialLeilao
 }
-    const atualizaLeilao =  await leilao.findOneAndUpdate({filter,"lances.email":req.body.email}, {$set:{"lances.$.valor":req.body.valor}});
-    console.log(atualizaLeilao);
-    res.status(200).json(atualizaLeilao);
+    const leilao = await Leilao.findOne(filter);
+    console.log('produto '+leilao["produto"].categoria.nome);
+    leilao["produto"].nome = req.body.nomeProduto;
+    leilao["produto"].descricao = req.body.descricaoProduto;
+    leilao["produto"].categoria.nome = req.body.nomeCategoria;
+    leilao.valor_inicial = req.body.valorInicialLeilao;
+
+    leilao.save();
+    console.log('efetuar leilão '+leilao);    
+    res.status(200).json(leilao);
 
 });
 
@@ -51,12 +59,12 @@ const atualizarLeilao = asyncHandler(async (req,res)=>{
 // @access private
 const pegaLeilaoId = asyncHandler(async (req,res)=>{
     const id = req.params.id;
-    leilao.findById(id,(err,leilaoResult)=>{
+    Leilao.findById(id,(err,leilaoResult)=>{
         if(err){
             res.status(500).send({message:err.message});
             return;
         }
-        res.status(200).send(produtoResult); 
+        res.status(200).send(leilaoResult); 
     });
   
     
@@ -75,6 +83,45 @@ const removerLeilao = asyncHandler(async (req,res)=>{
     }else{
     res.status(200).send(leilao);
 }
-})
+});
 
-module.exports = {listarLeilao, salvarLeilao,atualizarLeilao,pegaLeilaoId,removerLeilao}
+const efetuarLance = asyncHandler(async(req,res)=>{
+    const filter = {_id:req.params.id};
+   // console.log('ID Lance '+req.params.id);
+    let update = {"email":req.body.email, "valor_lance":req.body.valor_lance}
+    //console.log('UPDATE '+JSON.stringify(update));
+    const atualizaLeilao = await Leilao.findOne(filter);
+   
+    //console.log('atualiza leilao '+JSON.stringify(atualizaLeilao.lances));
+    if(atualizaLeilao.lances!==null){
+        console.log('lenght '+atualizaLeilao.lances.length);
+   if(atualizaLeilao.lances.length > 0){
+        for(let i=0;i < atualizaLeilao.lances.length;i++){
+            const l = atualizaLeilao.lances[i];
+            if(req.body.email === l.email){                
+            l.valor_lance = req.body.valor_lance;
+             console.log("Atualiza valor do lance: "+JSON.stringify(l));
+              break;
+            }   
+            
+        }
+    //   console.log("update "+JSON.stringify(update));        
+    }else if(atualizaLeilao.lances.length == 0){
+        console.log("Primeiro Lance "+JSON.stringify(update));        
+       // atualizaLeilao.lances.push(update);
+
+
+    }
+    //atualizaLeilao.save();
+
+    console.log('fim');
+     
+    }
+   // console.log('update operation '+update.valor_lance);
+  
+    //console.log('efetuar leilão '+atualizaLeilao.lances);    
+    res.status(200).json(atualizaLeilao);
+});
+
+
+module.exports = {listarLeilao, salvarLeilao,atualizarLeilao,pegaLeilaoId,removerLeilao,efetuarLance}

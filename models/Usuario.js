@@ -8,7 +8,8 @@ const usuario = new mongoose.Schema({
     login:{type:String, required:[true]},
     senha:{type:String, required:[true]},
     email:{type:String,required:[true]},
-    data_hora:{type:Date, default: Date.now}
+    data_hora:{type:Date, default: Date.now},
+    status:{type:String, required:[true], default:'a'}
 });
 
 const Usuario = mongoose.model("usuario",usuario);
